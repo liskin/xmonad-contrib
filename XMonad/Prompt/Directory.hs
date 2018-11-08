@@ -20,6 +20,8 @@ module XMonad.Prompt.Directory (
                              Dir
                               ) where
 
+import Data.List ( sort )
+
 import XMonad
 import XMonad.Prompt
 import XMonad.Util.Run ( runProcessWithInput )
@@ -46,7 +48,7 @@ directoryMultipleModes :: String            -- ^ Prompt.
 directoryMultipleModes p f = XPT (Dir p f)
 
 getDirCompl :: String -> IO [String]
-getDirCompl s = (filter notboring . lines) <$>
+getDirCompl s = (sort . filter notboring . lines) <$>
                 runProcessWithInput "bash" [] ("compgen -A directory " ++ s ++ "\n")
 
 notboring :: String -> Bool
