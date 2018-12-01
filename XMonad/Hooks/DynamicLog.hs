@@ -389,7 +389,7 @@ shorten :: Int -> String -> String
 shorten n xs | length xs < n = xs
              | otherwise     = take (n - length end) xs ++ end
  where
-    end = "..."
+    end = "~"
 
 -- | Like 'shorten', but truncate from the left instead of right.
 shortenLeft :: Int -> String -> String
