@@ -375,7 +375,7 @@ shorten :: Int -> String -> String
 shorten n xs | length xs < n = xs
              | otherwise     = take (n - length end) xs ++ end
  where
-    end = "..."
+    end = "~"
 
 -- | Output a list of strings, ignoring empty ones and separating the
 --   rest with the given separator.
