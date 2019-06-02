@@ -21,6 +21,8 @@ module XMonad.Hooks.EwmhDesktops (
     ewmhDesktopsLogHookCustom,
     ewmhDesktopsEventHook,
     ewmhDesktopsEventHookCustom,
+    ignoreNetActiveWindow,
+    ignoreNetActiveWindowEventHook,
     ewmhFullscreen,
     fullscreenEventHook,
     fullscreenStartup
@@ -31,7 +33,6 @@ import Data.List
 import Data.Maybe
 import Data.Monoid
 import qualified Data.Map.Strict as M
-import System.IO.Unsafe
 
 import XMonad
 import Control.Monad
@@ -216,6 +217,33 @@ handle f (ClientMessageEvent {
           return ()
 handle _ _ = return ()
 
+-- | Ignore window activation requests from some windows, e.g. a browser
+-- stealing focus whenever a link is opened from another app.
+--
+-- Usage:
+--
+-- > main = xmonad $ ignoreNetActiveWindow q $ ewmh def
+-- >   where
+-- >     q = className =? "google-chrome"
+ignoreNetActiveWindow :: Query Bool -> XConfig a -> XConfig a
+ignoreNetActiveWindow q c =
+    c { handleEventHook = ignoreNetActiveWindowEventHook q (handleEventHook c) }
+
+ignoreNetActiveWindowEventHook :: Query Bool -> (Event -> X All) -> Event -> X All
+ignoreNetActiveWindowEventHook q hook
+    e@ClientMessageEvent{ ev_window = w, ev_message_type = mt, ev_data = d } = do
+        a_aw <- getAtom "_NET_ACTIVE_WINDOW"
+        -- https://specifications.freedesktop.org/wm-spec/wm-spec-1.3.html#sourceindication
+        let fromPager = [2] `isPrefixOf` d
+        if mt == a_aw && not fromPager
+            then do
+                ignore <- runQuery q w
+                if ignore
+                    then return (All True)
+                    else hook e
+            else hook e
+ignoreNetActiveWindowEventHook _ hook e = hook e
+
 -- | Add EWMH fullscreen functionality to the given config.
 --
 -- This must be applied after 'ewmh', like so:
@@ -323,7 +351,6 @@ addSupported :: [String] -> X ()
 addSupported props = withDisplay $ \dpy -> do
     r <- asks theRoot
     a <- getAtom "_NET_SUPPORTED"
-    fs <- getAtom "_NET_WM_STATE_FULLSCREEN"
     newSupportedList <- mapM (fmap fromIntegral . getAtom) props
     io $ do
         supportedList <- fmap (join . maybeToList) $ getWindowProperty32 dpy a r

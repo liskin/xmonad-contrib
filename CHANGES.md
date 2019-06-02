@@ -148,6 +148,11 @@
   * `XMonad.Hooks.DynamicLog`
     - Added `xmobarBorder` function to create borders around strings.
 
+  * `XMonad.Hooks.EwmhDesktops`
+
+    Added `ignoreNetActiveWindow`, to selectively ignore window activation
+    requests from focus-stealing apps.
+
 ## 0.16
 
 ### Breaking Changes
