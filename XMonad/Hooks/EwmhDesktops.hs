@@ -43,6 +43,7 @@ import qualified XMonad.Util.ExtensibleState as E
 import XMonad.Util.XUtils (fi)
 import XMonad.Util.WorkspaceCompare
 import XMonad.Util.WindowProperties (getProp32)
+import qualified XMonad.Util.PureX as P
 
 -- $usage
 -- You can use this module with the following in your @~\/.xmonad\/xmonad.hs@:
@@ -198,7 +199,7 @@ handle f (ClientMessageEvent {
        if  mt == a_cd then do
                let n = head d
                if 0 <= n && fi n < length ws then
-                       windows $ W.view (W.tag (ws !! fi n))
+                       P.defile $ P.view (W.tag (ws !! fi n))
                  else  trace $ "Bad _NET_CURRENT_DESKTOP with data[0]="++show n
         else if mt == a_d then do
                let n = head d
@@ -206,7 +207,7 @@ handle f (ClientMessageEvent {
                        windows $ W.shiftWin (W.tag (ws !! fi n)) w
                  else  trace $ "Bad _NET_DESKTOP with data[0]="++show n
         else if mt == a_aw then
-               windows $ W.focusWindow w
+               P.defile $ P.focusWindow w
         else if mt == a_cw then
                killWindow w
         else if mt `elem` a_ignore then
