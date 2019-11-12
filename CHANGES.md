@@ -243,6 +243,11 @@
 
     - Export `Minimize` type constructor.
 
+  * `XMonad.Util.Purex`
+
+    - Added `focusWindow` and `focusNth` which don't refresh (and thus
+      possibly flicker) when they happen to be a no-op.
+
 ## 0.16
 
 ### Breaking Changes
