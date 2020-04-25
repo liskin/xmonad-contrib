@@ -392,7 +392,6 @@ addSupported :: [String] -> X ()
 addSupported props = withDisplay $ \dpy -> do
     r <- asks theRoot
     a <- getAtom "_NET_SUPPORTED"
-    fs <- getAtom "_NET_WM_STATE_FULLSCREEN"
     newSupportedList <- mapM (fmap fromIntegral . getAtom) props
     io $ do
         supportedList <- fmap (join . maybeToList) $ getWindowProperty32 dpy a r
