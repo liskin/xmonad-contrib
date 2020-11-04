@@ -271,9 +271,14 @@ handle f (ClientMessageEvent {ev_window = w, ev_message_type = mt, ev_data = d})
                           | otherwise -> trace $ "Bad _NET_DESKTOP with data[0]="++show n
                     _ -> trace $ "Bad _NET_DESKTOP with data="++show d
             | mt == a_aw -> do
-                lh <- asks (logHook . config)
-                XS.put (NetActivated (Just w))
-                lh
+                case d of
+                    -- when the request comes from a pager, honor it unconditionally
+                    -- https://specifications.freedesktop.org/wm-spec/wm-spec-1.3.html#sourceindication
+                    (2:_) -> windows $ W.focusWindow w
+                    _ -> do
+                        lh <- asks (logHook . config)
+                        XS.put (NetActivated (Just w))
+                        lh
             | mt == a_cw ->
                 killWindow w
             | otherwise ->
