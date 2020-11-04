@@ -26,6 +26,7 @@ module XMonad.Layout.WorkspaceDir (
                                    -- $usage
                                    workspaceDir,
                                    changeDir,
+                                   getWorkspaceDir,
                                    WorkspaceDir,
                                    Chdir(Chdir),
                                   ) where
@@ -94,3 +95,6 @@ scd x = catchIO $ setCurrentDirectory x
 
 changeDir :: XPConfig -> X ()
 changeDir c = directoryPrompt c "Set working directory: " (sendMessage . Chdir)
+
+getWorkspaceDir :: ModifiedLayout WorkspaceDir l a -> String
+getWorkspaceDir (ModifiedLayout (WorkspaceDir s) _) = s
