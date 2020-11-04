@@ -30,10 +30,7 @@ module XMonad.Layout.WorkspaceDir (
                                    Chdir(Chdir),
                                   ) where
 
-import Data.List ( isPrefixOf )
 import System.Directory ( setCurrentDirectory, getCurrentDirectory )
-import System.Environment ( getEnv )
-import System.IO.Unsafe ( unsafePerformIO )
 import Control.Monad ( when )
 
 import XMonad hiding ( focus )
@@ -80,8 +77,6 @@ instance LayoutModifier WorkspaceDir Window where
                                                 return $ Just $ WorkspaceDir wd'
         | otherwise = return Nothing
 
-    modifierDescription (WorkspaceDir d) = shortenL 30 (shortenDir d) ++ " |"
-
 workspaceDir :: LayoutClass l a => String -> l a
              -> ModifiedLayout WorkspaceDir l a
 workspaceDir s = ModifiedLayout (WorkspaceDir s)
@@ -94,18 +89,3 @@ scd x = catchIO $ setCurrentDirectory x
 
 changeDir :: XPConfig -> X ()
 changeDir c = directoryPrompt c "Set working directory: " (sendMessage . Chdir)
-
--- Current directory printer.
-home :: String
-home = unsafePerformIO $ getEnv "HOME"
-
-shortenDir :: String -> String
-shortenDir s | home `isPrefixOf` s = '~' : drop (length home) s
-             | otherwise           = s
-
-shortenL :: Int -> String -> String
-shortenL n xs | l < n     = xs
-              | otherwise = end ++ (drop (l - n + length end) xs)
- where
-    end = "..."
-    l = length xs
