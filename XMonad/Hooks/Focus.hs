@@ -56,9 +56,9 @@ module XMonad.Hooks.Focus
       -- * Example configurations.
       --
       -- $examples
-    , activateSwitchWs
+    {-, activateSwitchWs
     , activateOnCurrentWs
-    , activateOnCurrentKeepFocus
+    , activateOnCurrentKeepFocus-}
     )
   where
 
@@ -74,7 +74,7 @@ import XMonad
 import qualified XMonad.StackSet as W
 import qualified XMonad.Util.ExtensibleState as XS
 import XMonad.Hooks.ManageHelpers (currentWs)
-import XMonad.Hooks.EwmhDesktops (activated, NetActivated(..))
+-- import XMonad.Hooks.EwmhDesktops (activated, NetActivated(..))
 
 
 -- $main
@@ -556,6 +556,7 @@ when' b mx
 -- Exmaple configurations.
 -- $examples
 
+{-
 -- | Default EWMH window activation behavior: switch to workspace with
 -- activated window and switch focus to it.
 activateSwitchWs :: ManageHook
@@ -578,4 +579,4 @@ activateOnCurrentWs = manageFocus (liftQuery activated <&&> newOnCur --> switchF
 activateOnCurrentKeepFocus :: ManageHook
 activateOnCurrentKeepFocus  = manageFocus (liftQuery activated <&&> newOnCur --> keepFocus)
                         <+> activateOnCurrent'
-
+-}
