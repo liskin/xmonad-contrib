@@ -47,6 +47,7 @@ module XMonad.Hooks.ManageHelpers (
     doFloatDep,
     doHideIgnore,
     doSink,
+    doFocus,
     Match,
 ) where
 
@@ -231,3 +232,7 @@ doHideIgnore = ask >>= \w -> liftX (hide w) >> doF (W.delete w)
 -- | Sinks a window
 doSink :: ManageHook
 doSink = reader (Endo . W.sink)
+
+-- | Focus a window (useful in 'XMonad.Hooks.EwmhDesktops.activateHook')
+doFocus :: ManageHook
+doFocus = reader (Endo . W.focusWindow)
