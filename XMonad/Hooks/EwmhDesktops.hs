@@ -241,15 +241,17 @@ ewmhDesktopsEventHook' EwmhConfig{ workspaceListTransform, activateHook }
 
         if  | mt == a_cd ->
                 case d of
-                    (n:_) | 0 <= n && fi n < length ws -> windows $ W.view (W.tag (ws !! fi n))
-                          | otherwise -> trace $ "Bad _NET_CURRENT_DESKTOP with data[0]="++show n
+                    (n:_) | n < 0 || fi n >= length ws -> trace $ "Bad _NET_CURRENT_DESKTOP with data[0]="++show n
+                          | W.currentTag s /= W.tag (ws !! fi n) -> windows $ W.view (W.tag (ws !! fi n))
+                          | otherwise -> return ()
                     _ -> trace $ "Bad _NET_CURRENT_DESKTOP with data="++show d
             | mt == a_d ->
                 case d of
-                    (n:_) | 0 <= n && fi n < length ws -> windows $ W.shiftWin (W.tag (ws !! fi n)) w
-                          | otherwise -> trace $ "Bad _NET_DESKTOP with data[0]="++show n
+                    (n:_) | n < 0 || fi n >= length ws -> trace $ "Bad _NET_DESKTOP with data[0]="++show n
+                          | W.findTag w s /= Just (W.tag (ws !! fi n)) -> windows $ W.shiftWin (W.tag (ws !! fi n)) w
+                          | otherwise -> return ()
                     _ -> trace $ "Bad _NET_DESKTOP with data="++show d
-            | mt == a_aw -> do
+            | mt == a_aw && W.peek s /= Just w -> do
                 case d of
                     -- when the request comes from a pager, honor it unconditionally
                     -- https://specifications.freedesktop.org/wm-spec/wm-spec-1.3.html#sourceindication
