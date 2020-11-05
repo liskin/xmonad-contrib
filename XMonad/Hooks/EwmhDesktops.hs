@@ -211,7 +211,6 @@ ewmhDesktopsEventHook = ewmhDesktopsEventHook' def
 ewmhDesktopsEventHookCustom :: ([WindowSpace] -> [WindowSpace]) -> Event -> X All
 ewmhDesktopsEventHookCustom f = ewmhDesktopsEventHook' def{ workspaceListTransform = f }
 
--- TODO: PureX, flicker
 -- TODO: fullscreen flag
 -- TODO: deprecate separate fullscreen and enable it by default, then move the
 -- implementation to X.L.Fullscreen
