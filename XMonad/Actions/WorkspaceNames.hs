@@ -190,12 +190,11 @@ workspaceNamePrompt conf job = do
         contains completions input =
           return $ filter (Data.List.isInfixOf input) completions
 
--- | Workspace list transformation for
--- 'XMonad.Hooks.EwmhDesktops.ewmhDesktopsLogHookCustom' that exposes
--- workspace names to pagers and other EWMH-aware clients.
+-- | 'XMonad.Hooks.EwmhDesktops.workspaceListTransform' that exposes workspace
+-- names to pagers and other EWMH-aware clients.
 --
 -- Usage:
--- > logHook = (workspaceNamesListTransform >>= ewmhDesktopsLogHookCustom) <+> …
+-- > ewmh' def{ workspaceListTransform = workspaceNamesListTransform }
 workspaceNamesListTransform :: X ([WindowSpace] -> [WindowSpace])
 workspaceNamesListTransform = do
     names <- getWorkspaceNames
