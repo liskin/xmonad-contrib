@@ -31,6 +31,8 @@
       `activateLogHook` to your `logHook`. Also, module `X.H.Focus` provides
       additional combinators.
 
+      TODO: refactor and update and make it not a breaking change
+
   * `XMonad.Prompt.Directory`
 
     The `Dir` constructor now takes an additional `ComplCaseSensitivity`
