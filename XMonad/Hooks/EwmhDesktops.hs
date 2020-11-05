@@ -217,10 +217,6 @@ ewmhDesktopsEventHook = ewmhDesktopsEventHook' def
 ewmhDesktopsEventHookCustom :: ([WindowSpace] -> [WindowSpace]) -> Event -> X All
 ewmhDesktopsEventHookCustom f = ewmhDesktopsEventHook' def{ workspaceListTransform = pure f }
 
--- TODO: fullscreen flag
--- TODO: deprecate separate fullscreen and enable it by default, then move the
--- implementation to X.L.Fullscreen
-
 -- |
 -- Intercepts messages from pagers and similar applications and reacts on them.
 -- Currently supports:
