@@ -345,6 +345,8 @@ data Focus          = Focus
                         , currentWorkspace  :: WorkspaceId
                         }
   deriving (Show)
+
+-- TODO: drop this
 instance Default Focus where
     def             = Focus
                         { focusedWindow     = Nothing
