@@ -66,6 +66,7 @@ import XMonad.Util.WindowProperties (getProp32)
 --
 -- You may also be interested in 'docks' from "XMonad.Hooks.ManageDocks".
 --
+-- TODO: mention "XMonad.Hooks.UrgencyHook"
 -- TODO: mention "XMonad.Hooks.Focus"
 
 -- | TODO
@@ -77,7 +78,7 @@ data EwmhConfig = EwmhConfig
 instance Default EwmhConfig where
     def = EwmhConfig
         { workspaceListTransform = id
-        , activateHook = doFocus
+        , activateHook = doFocus -- TODO: urgency
         }
 
 -- | 'ewmh'' with default 'EwmhConfig'.
@@ -209,6 +210,11 @@ ewmhDesktopsEventHook = ewmhDesktopsEventHook' def
 {-# DEPRECATED ewmhDesktopsEventHookCustom "Use ewmhDesktopsEventHook' instead" #-}
 ewmhDesktopsEventHookCustom :: ([WindowSpace] -> [WindowSpace]) -> Event -> X All
 ewmhDesktopsEventHookCustom f = ewmhDesktopsEventHook' def{ workspaceListTransform = f }
+
+-- TODO: PureX, flicker
+-- TODO: fullscreen flag
+-- TODO: deprecate separate fullscreen and enable it by default, then move the
+-- implementation to X.L.Fullscreen
 
 -- |
 -- Intercepts messages from pagers and similar applications and reacts on them.
