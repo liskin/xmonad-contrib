@@ -35,6 +35,8 @@
       `activateLogHook` to your `logHook`. Also, module `X.H.Focus` provides
       additional combinators.
 
+      TODO: refactor and update and make it not a breaking change
+
   * All modules still exporting a `defaultFoo` constructor
 
     - All of these were now removed. You can use the re-exported `def` from
