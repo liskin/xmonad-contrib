@@ -32,7 +32,10 @@ module XMonad.Hooks.EwmhDesktops (
     ewmhDesktopsEventHookCustom,
     ewmhFullscreen,
     fullscreenEventHook,
-    fullscreenStartup
+    fullscreenStartup,
+
+    -- * Stuff for developers:
+    addSupported,
     ) where
 
 import Codec.Binary.UTF8.String (encode)
@@ -59,7 +62,7 @@ import XMonad.Util.WindowProperties (getProp32)
 -- > import XMonad
 -- > import XMonad.Hooks.EwmhDesktops
 -- >
--- > main = xmonad $ ewmhFullscreen $ ewmh def
+-- > main = xmonad $ ewmh' def{fullscreen = True} def
 --
 -- or, if fullscreen handling is not desired, just
 --
@@ -74,12 +77,14 @@ import XMonad.Util.WindowProperties (getProp32)
 data EwmhConfig = EwmhConfig
     { workspaceListTransform :: [WindowSpace] -> [WindowSpace]
     , activateHook :: ManageHook
+    , fullscreen :: Bool
     }
 
 instance Default EwmhConfig where
     def = EwmhConfig
         { workspaceListTransform = id
         , activateHook = doFocus
+        , fullscreen = False
         }
 
 -- | 'ewmh'' with default 'EwmhConfig'.
@@ -102,7 +107,7 @@ ewmhDesktopsStartup = ewmhDesktopsStartup' def
 -- Initializes EwmhDesktops and advertises EWMH support to the X
 -- server
 ewmhDesktopsStartup' :: EwmhConfig -> X ()
-ewmhDesktopsStartup' _ = setSupported
+ewmhDesktopsStartup' = setSupported
 
 -- |
 -- Cached desktop names (e.g. @_NET_NUMBER_OF_DESKTOPS@ and
@@ -223,9 +228,13 @@ ewmhDesktopsEventHookCustom f = ewmhDesktopsEventHook' def{ workspaceListTransfo
 --  * _NET_ACTIVE_WINDOW (activate another window, changing workspace if needed)
 --
 --  * _NET_CLOSE_WINDOW (close window)
+--
+--  * _NET_WM_STATE with _NET_WM_STATE_FULLSCREEN property (other properties
+--    handled by other modules like "XMonad.Hooks.ManageHelpers",
+--    "XMonad.Actions.Minimize", etc.)
 ewmhDesktopsEventHook' :: EwmhConfig -> Event -> X All
-ewmhDesktopsEventHook' EwmhConfig{ workspaceListTransform, activateHook }
-        ClientMessageEvent{ev_window = w, ev_message_type = mt, ev_data = d}
+ewmhDesktopsEventHook' EwmhConfig{ workspaceListTransform, activateHook, fullscreen }
+        e@ClientMessageEvent{ev_window = w, ev_message_type = mt, ev_data = d}
     = withWindowSet $ \s -> do
         sort' <- getSortByIndex
         let ws = workspaceListTransform $ sort' $ W.workspaces s
@@ -234,6 +243,7 @@ ewmhDesktopsEventHook' EwmhConfig{ workspaceListTransform, activateHook }
         a_d <- getAtom "_NET_WM_DESKTOP"
         a_aw <- getAtom "_NET_ACTIVE_WINDOW"
         a_cw <- getAtom "_NET_CLOSE_WINDOW"
+        a_ws <- getAtom "_NET_WM_STATE"
 
         if  | mt == a_cd ->
                 case d of
@@ -255,7 +265,9 @@ ewmhDesktopsEventHook' EwmhConfig{ workspaceListTransform, activateHook }
                     _ -> windows . appEndo =<< runQuery activateHook w
             | mt == a_cw ->
                 killWindow w
-            | otherwise ->
+            | mt == a_ws && fullscreen ->
+                void $ fullscreenEventHook' e
+            | otherwise -> do
                 -- The Message is unknown to us, but that is ok, not all are meant
                 -- to be handled by the window manager
                 return ()
@@ -272,22 +284,26 @@ ewmhDesktopsEventHook' _ _ = return (All True)
 -- NOT:
 --
 -- > main = xmonad $ ewmh $ ewmhFullscreen def
+{-# DEPRECATED ewmhFullscreen "Use ewmh' def{fullscreen = True} instead" #-}
 ewmhFullscreen :: XConfig a -> XConfig a
 ewmhFullscreen c = c { startupHook     = startupHook c <+> fullscreenStartup
                      , handleEventHook = handleEventHook c <+> fullscreenEventHook }
 
 -- | Advertises EWMH fullscreen support to the X server.
+{-# DEPRECATED fullscreenStartup "Use ewmh' def{fullscreen = True} instead" #-}
 fullscreenStartup :: X ()
-fullscreenStartup = setFullscreenSupported
+fullscreenStartup = addSupported ["_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN"]
 
 -- |
 -- An event hook to handle applications that wish to fullscreen using the
 -- _NET_WM_STATE protocol. This includes users of the gtk_window_fullscreen()
 -- function, such as Totem, Evince and OpenOffice.org.
---
--- Note this is not included in 'ewmh'.
+{-# DEPRECATED fullscreenEventHook "Use ewmh' def{fullscreen = True} instead" #-}
 fullscreenEventHook :: Event -> X All
-fullscreenEventHook (ClientMessageEvent _ _ _ dpy win typ (action:dats)) = do
+fullscreenEventHook = fullscreenEventHook'
+
+fullscreenEventHook' :: Event -> X All
+fullscreenEventHook' (ClientMessageEvent _ _ _ dpy win typ (action:dats)) = do
   wmstate <- getAtom "_NET_WM_STATE"
   fullsc <- getAtom "_NET_WM_STATE_FULLSCREEN"
   wstate <- fromMaybe [] <$> getProp32 wmstate win
@@ -310,7 +326,7 @@ fullscreenEventHook (ClientMessageEvent _ _ _ dpy win typ (action:dats)) = do
 
   return $ All True
 
-fullscreenEventHook _ = return $ All True
+fullscreenEventHook' _ = return $ All True
 
 setNumberOfDesktops :: (Integral a) => a -> X ()
 setNumberOfDesktops n = withDisplay $ \dpy -> do
@@ -347,21 +363,23 @@ setWindowDesktop win i = withDisplay $ \dpy -> do
     a <- getAtom "_NET_WM_DESKTOP"
     io $ changeProperty32 dpy win a cARDINAL propModeReplace [fromIntegral i]
 
-setSupported :: X ()
-setSupported = withDisplay $ \dpy -> do
+setSupported :: EwmhConfig -> X ()
+setSupported EwmhConfig{ fullscreen } = withDisplay $ \dpy -> do
     r <- asks theRoot
     a <- getAtom "_NET_SUPPORTED"
-    supp <- mapM getAtom ["_NET_WM_STATE_HIDDEN"
-                         ,"_NET_NUMBER_OF_DESKTOPS"
-                         ,"_NET_CLIENT_LIST"
-                         ,"_NET_CLIENT_LIST_STACKING"
-                         ,"_NET_CURRENT_DESKTOP"
-                         ,"_NET_DESKTOP_NAMES"
-                         ,"_NET_ACTIVE_WINDOW"
-                         ,"_NET_WM_DESKTOP"
-                         ,"_NET_WM_STRUT"
-                         ]
-    io $ changeProperty32 dpy r a aTOM propModeReplace (fmap fromIntegral supp)
+    supp <- mapM getAtom $
+        [ "_NET_WM_STATE_HIDDEN"
+        , "_NET_NUMBER_OF_DESKTOPS"
+        , "_NET_CLIENT_LIST"
+        , "_NET_CLIENT_LIST_STACKING"
+        , "_NET_CURRENT_DESKTOP"
+        , "_NET_DESKTOP_NAMES"
+        , "_NET_ACTIVE_WINDOW"
+        , "_NET_WM_DESKTOP"
+        , "_NET_WM_STRUT"
+        ] ++
+        if fullscreen then ["_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN"] else []
+    io $ changeProperty32 dpy r a aTOM propModeReplace (fmap fromIntegral (nub supp))
 
     setWMName "xmonad"
 
@@ -374,9 +392,6 @@ addSupported props = withDisplay $ \dpy -> do
     io $ do
         supportedList <- fmap (join . maybeToList) $ getWindowProperty32 dpy a r
         changeProperty32 dpy r a aTOM propModeReplace (nub $ newSupportedList ++ supportedList)
-
-setFullscreenSupported :: X ()
-setFullscreenSupported = addSupported ["_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN"]
 
 setActiveWindow :: Window -> X ()
 setActiveWindow w = withDisplay $ \dpy -> do
