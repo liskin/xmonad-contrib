@@ -63,6 +63,7 @@ module XMonad.Hooks.UrgencyHook (
                                  FocusHook(..),
                                  filterUrgencyHook,
                                  minutes, seconds,
+                                 askUrgent, doAskUrgent,
                                  -- * Stuff for developers:
                                  readUrgents, withUrgents,
                                  StdoutUrgencyHook(..),
@@ -80,6 +81,7 @@ import qualified XMonad.Util.ExtensibleState as XS
 import XMonad.Util.NamedWindows (getName)
 import XMonad.Util.Timer (TimerId, startTimer, handleTimer)
 import XMonad.Util.WindowProperties (getProp32)
+import XMonad.Util.XUtils (fi)
 
 import Control.Monad (when)
 import Data.Bits (testBit)
@@ -541,3 +543,27 @@ filterUrgencyHook skips w = do
         Just tag -> when (tag `elem` skips)
                         $ adjustUrgents (delete w)
         _ -> return ()
+
+-- | Mark the given window urgent.
+--
+-- (The implementation is a bit hacky: send a _NET_WM_STATE ClientMessage to
+-- ourselves. This is so that we respect the 'SuppressWhen' of the configured
+-- urgency hooks.)
+askUrgent :: Window -> X ()
+askUrgent w = withDisplay $ \dpy -> do
+    rw <- asks theRoot
+    a_wmstate <- getAtom "_NET_WM_STATE"
+    a_da      <- getAtom "_NET_WM_STATE_DEMANDS_ATTENTION"
+    let state_add = 1
+    let source_pager = 2
+    io $ allocaXEvent $ \e -> do
+        setEventType e clientMessage
+        setClientMessageEvent' e w a_wmstate 32 [state_add, fi a_da, 0, source_pager]
+        sendEvent dpy rw False (substructureRedirectMask .|. substructureNotifyMask) e
+
+-- | Helper for 'ManageHook' that marks the window as urgent (unless
+-- suppressed, see 'SuppressWhen'). Useful in
+-- 'XMonad.Hooks.EwmhDesktops.activateHook' and also in combination with
+-- "XMonad.Hooks.InsertPosition", "XMonad.Hooks.Focus".
+doAskUrgent :: ManageHook
+doAskUrgent = ask >>= \w -> liftX (askUrgent w) >> return mempty
