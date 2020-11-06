@@ -32,6 +32,7 @@
       additional combinators.
 
       TODO: refactor and update and make it not a breaking change
+      TODO: mention doAskUrgent
 
   * `XMonad.Prompt.Directory`
 
