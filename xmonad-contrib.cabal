@@ -236,6 +236,7 @@ library
                         XMonad.Layout.IfMax
                         XMonad.Layout.ImageButtonDecoration
                         XMonad.Layout.IndependentScreens
+                        XMonad.Layout.Inspect
                         XMonad.Layout.LayoutBuilder
                         XMonad.Layout.LayoutBuilderP
                         XMonad.Layout.LayoutCombinators

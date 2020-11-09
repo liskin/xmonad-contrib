@@ -58,6 +58,7 @@ import XMonad hiding ((|||))
 import XMonad.StackSet (Workspace (..))
 import XMonad.Layout.Combo
 import XMonad.Layout.DragPane
+import XMonad.Layout.Inspect
 
 -- $usage
 -- You can use this module with the following in your @~\/.xmonad\/xmonad.hs@:
@@ -288,3 +289,7 @@ passOnM m (NewSelect False lt lf) = do mlf' <- handleMessage lf m
 
 when' :: Monad m => (a -> Bool) -> m a -> m a -> m a
 when' f a b = do a1 <- a; if f a1 then b else return a1
+
+instance (InspectLayout i l1 a, InspectLayout i l2 a) => InspectLayout i (NewSelect l1 l2) a where
+    inspectLayout i (NewSelect True l1 _) = inspectLayout i l1
+    inspectLayout i (NewSelect False _ l2) = inspectLayout i l2
