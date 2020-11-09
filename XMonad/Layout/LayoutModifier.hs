@@ -34,6 +34,7 @@ module XMonad.Layout.LayoutModifier (
     ) where
 
 import Control.Monad
+import Data.Maybe ( fromMaybe )
 import Data.Typeable ( cast )
 
 import XMonad
@@ -288,7 +289,6 @@ class InspectLayoutModifier l a where
     inspectModifier :: (LayoutModifier m a, Typeable m) => l a -> Maybe (m a)
 
 -- | TODO
-instance (LayoutClass l a, LayoutModifier m a, Typeable m, Typeable a) => InspectLayoutModifier (ModifiedLayout m l) a where
-    inspectModifier l = case cast l of
-        Just (ModifiedLayout m (_ :: l a)) -> Just m
-        Nothing -> Nothing
+instance (InspectLayoutModifier l a, Typeable m, Typeable a)
+         => InspectLayoutModifier (ModifiedLayout m l) a where
+    inspectModifier (ModifiedLayout m l) = fromMaybe (inspectModifier l) (cast m)
