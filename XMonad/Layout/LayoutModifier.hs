@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable, FlexibleInstances, MultiParamTypeClasses, PatternGuards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -26,10 +27,14 @@ module XMonad.Layout.LayoutModifier (
     -- $usage
 
     -- * The 'LayoutModifier' class
-    LayoutModifier(..), ModifiedLayout(..)
+    LayoutModifier(..), ModifiedLayout(..),
+
+    -- * The 'InspectLayoutModifier' class
+    InspectLayoutModifier(..)
     ) where
 
 import Control.Monad
+import Data.Typeable ( cast )
 
 import XMonad
 import XMonad.StackSet ( Stack, Workspace (..) )
@@ -278,3 +283,12 @@ data ModifiedLayout m l a = ModifiedLayout (m a) (l a) deriving ( Read, Show )
 -- the above does not parenthesize (m a) and (l a), which is obviously
 -- incorrect.
 
+-- | TODO
+class InspectLayoutModifier l a where
+    inspectModifier :: (LayoutModifier m a, Typeable m) => l a -> Maybe (m a)
+
+-- | TODO
+instance (LayoutClass l a, LayoutModifier m a, Typeable m, Typeable a) => InspectLayoutModifier (ModifiedLayout m l) a where
+    inspectModifier l = case cast l of
+        Just (ModifiedLayout m (_ :: l a)) -> Just m
+        Nothing -> Nothing
