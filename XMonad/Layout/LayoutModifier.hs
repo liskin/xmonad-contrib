@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable, FlexibleInstances, MultiParamTypeClasses, PatternGuards #-}
+{-# LANGUAGE MonoLocalBinds #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -33,6 +34,8 @@ import Control.Monad
 
 import XMonad
 import XMonad.StackSet ( Stack, Workspace (..) )
+
+import XMonad.Layout.Inspect
 
 -- $usage
 --
@@ -278,3 +281,7 @@ data ModifiedLayout m l a = ModifiedLayout (m a) (l a) deriving ( Read, Show )
 -- the above does not parenthesize (m a) and (l a), which is obviously
 -- incorrect.
 
+instance (InspectLayout i m a, InspectLayout i l a)
+  => InspectLayout i (ModifiedLayout m l) a where
+    inspectLayout i (ModifiedLayout m l) =
+        inspectLayout i m `mappend` inspectLayout i l
