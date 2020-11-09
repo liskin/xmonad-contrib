@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable, FlexibleInstances, MultiParamTypeClasses, PatternGuards #-}
+{-# LANGUAGE MonoLocalBinds #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -33,6 +34,8 @@ import XMonad.Prelude
 
 import XMonad
 import XMonad.StackSet ( Stack, Workspace (..) )
+
+import XMonad.Layout.Inspect
 
 -- $usage
 --
@@ -273,3 +276,8 @@ instance (LayoutModifier m a, LayoutClass l a, Typeable m) => LayoutClass (Modif
 --   combined with an underlying layout.  It is, of course, itself a
 --   layout (i.e. an instance of 'LayoutClass').
 data ModifiedLayout m l a = ModifiedLayout (m a) (l a) deriving ( Read, Show )
+
+instance (InspectLayout i m a, InspectLayout i l a)
+  => InspectLayout i (ModifiedLayout m l) a where
+    inspectLayout i (ModifiedLayout m l) =
+        inspectLayout i m `mappend` inspectLayout i l

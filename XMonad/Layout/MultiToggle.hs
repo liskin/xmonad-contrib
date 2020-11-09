@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable, ExistentialQuantification, Rank2Types, MultiParamTypeClasses, FunctionalDependencies, FlexibleInstances, FlexibleContexts, PatternGuards #-}
+{-# LANGUAGE MonoLocalBinds #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -35,6 +36,7 @@ import XMonad
 import XMonad.Prelude hiding (find)
 
 import XMonad.StackSet (Workspace(..))
+import XMonad.Layout.Inspect
 
 import Control.Arrow
 import Data.Typeable
@@ -211,3 +213,7 @@ instance (Typeable a, Show ts, Typeable ts, HList ts a, LayoutClass l a) => Layo
             = case currLayout mt of
                 EL l det -> (fmap (\x -> mt { currLayout = EL x det })) <$>
                     handleMessage l m
+
+instance (InspectLayout i l a, LayoutClass l a) => InspectLayout i (MultiToggle ts l) a where
+    inspectLayout i mt = inspectLayout i $ deEL $ currLayout mt
+    -- inspect current transformer?
