@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable, FlexibleInstances, MultiParamTypeClasses, TypeSynonymInstances, PatternGuards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -28,14 +29,17 @@ module XMonad.Layout.WorkspaceDir (
                                    changeDir,
                                    WorkspaceDir,
                                    Chdir(Chdir),
+                                   Curdir(Curdir),
                                   ) where
 
 import System.Directory ( setCurrentDirectory, getCurrentDirectory )
 import Control.Monad ( when )
+import Data.Monoid ( Alt )
 
 import XMonad hiding ( focus )
 import XMonad.Prompt ( XPConfig )
 import XMonad.Prompt.Directory ( directoryPrompt )
+import XMonad.Layout.Inspect
 import XMonad.Layout.LayoutModifier
 import XMonad.StackSet ( tag, currentTag )
 
@@ -94,3 +98,9 @@ scd x = catchIO $ setCurrentDirectory x
 
 changeDir :: XPConfig -> X ()
 changeDir c = directoryPrompt c "Set working directory: " (sendMessage . Chdir)
+
+data Curdir = Curdir
+type instance InspectResult Curdir = Alt Maybe String
+
+instance InspectLayout Curdir WorkspaceDir a where
+    inspectLayout Curdir (WorkspaceDir d) = pure d
