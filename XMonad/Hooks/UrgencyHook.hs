@@ -549,6 +549,8 @@ filterUrgencyHook skips w = do
 -- (The implementation is a bit hacky: send a _NET_WM_STATE ClientMessage to
 -- ourselves. This is so that we respect the 'SuppressWhen' of the configured
 -- urgency hooks.)
+--
+-- TODO: https://github.com/quchen/articles/blob/master/haskell-cpp-compatibility.md
 askUrgent :: Window -> X ()
 askUrgent w = withDisplay $ \dpy -> do
     rw <- asks theRoot
