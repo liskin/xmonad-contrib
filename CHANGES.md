@@ -15,24 +15,24 @@
 
   * `XMonad.Hooks.EwmhDesktops`
 
-    It is no longer recommended to use `fullscreenEventHook` directly.
-    Instead, use `ewmhFullscreen` which additionally advertises fullscreen
-    support in `_NET_SUPPORTED` and fixes fullscreening of applications that
-    explicitly check it, e.g. mupdf-gl, sxiv, …
+    - It is no longer recommended to use `fullscreenEventHook` directly.
+      Instead, use `ewmh' def{fullscreen = True}` which additionally advertises
+      fullscreen support in `_NET_SUPPORTED` and fixes fullscreening of
+      applications that explicitly check it, e.g. mupdf-gl, sxiv, …
 
-    `XMonad.Layout.Fullscreen.fullscreenSupport` now advertises it as well,
-    and no configuration changes are required in this case.
+      `XMonad.Layout.Fullscreen.fullscreenSupport` now advertises it as well,
+      and no configuration changes are required in this case.
 
+    - `ewmh` function will use `logHook` for handling activated window. And now
+      by default window activation will do nothing.
 
-  * `XMonad.Hooks.EwmhDesktops`
+      You can use regular `ManageHook` combinators for changing window
+      activation behavior and then add resulting `ManageHook` using
+      `activateLogHook` to your `logHook`. Also, module `X.H.Focus` provides
+      additional combinators.
 
-    `ewmh` function will use `logHook` for handling activated window. And now
-    by default window activation will do nothing.
-
-    You can use regular `ManageHook` combinators for changing window
-    activation behavior and then add resulting `ManageHook` using
-    `activateLogHook` to your `logHook`. Also, module `X.H.Focus` provides
-    additional combinators.
+      TODO: refactor and update and make it not a breaking change
+      TODO: mention doAskUrgent
 
   * `XMonad.Prompt.Directory`
 
@@ -250,6 +250,11 @@
   * `XMonad.Layout.Minimize`
 
     - Export `Minimize` type constructor.
+
+  * `XMonad.Util.PureX`
+
+    - Added `focusWindow` and `focusNth` which don't refresh (and thus
+      possibly flicker) when they happen to be a no-op.
 
   * Several `LayoutClass` instances now have an additional `Typeable`
     constraint which may break some advanced configs. The upside is that we

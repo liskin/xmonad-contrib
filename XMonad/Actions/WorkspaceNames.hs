@@ -37,7 +37,10 @@ module XMonad.Actions.WorkspaceNames (
     swapWithCurrent,
 
     -- * Workspace prompt
-    workspaceNamePrompt
+    workspaceNamePrompt,
+
+    -- * EwmhDesktops integration
+    workspaceNamesListTransform
     ) where
 
 import XMonad
@@ -101,8 +104,8 @@ getWorkspaceNames' = do
 -- workspaces with a name, and to @\"t\"@ otherwise.
 getWorkspaceNames :: X (WorkspaceId -> String)
 getWorkspaceNames = do
-    lookup <- getWorkspaceNames'
-    return $ \wks -> wks ++ maybe "" (':' :) (lookup wks)
+    lookup' <- getWorkspaceNames'
+    return $ \wks -> wks ++ maybe "" (':' :) (lookup' wks)
 
 -- | Gets the name of a workspace, if set, otherwise returns nothing.
 getWorkspaceName :: WorkspaceId -> X (Maybe String)
@@ -184,3 +187,10 @@ workspaceNamePrompt conf job = do
                                 Just i -> i
         contains completions input =
           return $ filter (Data.List.isInfixOf input) completions
+
+-- | 'XMonad.Hooks.EwmhDesktops.workspaceListTransform' that exposes workspace
+-- names to pagers and other EWMH-aware clients.
+workspaceNamesListTransform :: X ([WindowSpace] -> [WindowSpace])
+workspaceNamesListTransform = do
+    names <- getWorkspaceNames
+    return $ map $ \ws -> ws{ W.tag = names $ W.tag ws }
