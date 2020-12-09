@@ -247,7 +247,11 @@
     - Export `popHiddenWindow` function restoring a specific window.
 
   * `XMonad.Hooks.ManageDocks`
+
     - Export `AvoidStruts` constructor
+
+    - Restored compatibility with pre-0.13 configs by making the startup hook
+      unnecessary for correct functioning.
 
   * `XMonad.Hooks.ManageHelpers`
     - Export `doSink`
@@ -839,6 +843,12 @@
   * `XMonad.Prompt` now stores its history file in the XMonad cache
     directory in a file named `prompt-history`.
 
+  * `XMonad.Hooks.ManageDocks` now requires an additional startup hook to be
+    added to configuration in addition to the other 3 hooks, otherwise docks
+    started before xmonad are covered by windows. It's recommended to use the
+    newly introduced `docks` function to add all necessary hooks to xmonad
+    config.
+
 ### New Modules
 
   * `XMonad.Layout.SortedLayout`
@@ -872,7 +882,7 @@
 
 ### Bug Fixes and Minor Changes
 
-  * `XMonad.Hooks.ManageDocks`,
+  * `XMonad.Hooks.ManageDocks`
 
     - Fix a very annoying bug where taskbars/docs would be
       covered by windows.
