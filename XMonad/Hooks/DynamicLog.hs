@@ -43,10 +43,10 @@ module XMonad.Hooks.DynamicLog (
     dzenPP, xmobarPP, sjanssenPP, byorgeyPP,
 
     -- * Formatting utilities
-    wrap, pad, trim, shorten, shortenLeft,
+    wrap, pad, trim, shorten, shorten', shortenLeft, shortenLeft',
     xmobarColor, xmobarAction, xmobarBorder,
     xmobarRaw, xmobarStrip, xmobarStripTags,
-    dzenColor, dzenEscape, dzenStrip,
+    dzenColor, dzenEscape, dzenStrip, filterOutWsPP,
 
     -- * Internal formatting functions
     pprWindowSet,
@@ -386,18 +386,22 @@ trim = f . f
 
 -- | Limit a string to a certain length, adding "..." if truncated.
 shorten :: Int -> String -> String
-shorten n xs | length xs < n = xs
-             | otherwise     = take (n - length end) xs ++ end
- where
-    end = "..."
+shorten = shorten' "..."
+
+-- | Limit a string to a certain length, adding @end@ if truncated.
+shorten' :: String -> Int -> String -> String
+shorten' end n xs | length xs < n = xs
+                  | otherwise     = take (n - length end) xs ++ end
 
 -- | Like 'shorten', but truncate from the left instead of right.
 shortenLeft :: Int -> String -> String
-shortenLeft n xs | l < n     = xs
-                 | otherwise = end ++ (drop (l - n + length end) xs)
- where
-    end = "..."
-    l = length xs
+shortenLeft = shortenLeft' "..."
+
+-- | Like 'shorten'', but truncate from the left instead of right.
+shortenLeft' :: String -> Int -> String -> String
+shortenLeft' end n xs | l < n     = xs
+                      | otherwise = end ++ (drop (l - n + length end) xs)
+ where l = length xs
 
 -- | Output a list of strings, ignoring empty ones and separating the
 --   rest with the given separator.
@@ -507,6 +511,23 @@ xmobarStripTags tags = strip [] where
     dropTilClose = drop 1 . dropWhile (/= '>')
     openTag str = "<" ++ str ++ "="
     closeTag str = "</" ++ str ++ ">"
+
+-- | Transforms a pretty-printer into one not displaying the given workspaces.
+--
+-- For example, filtering out the @NSP@ workspace before giving the 'PP' to
+-- 'dynamicLogWithPP':
+--
+-- > logHook = dynamicLogWithPP . filterOutWsPP [scratchpadWorkspaceTag] $ def
+--
+-- Here is another example, when using "XMonad.Layout.IndependentScreens".  If
+-- you have handles @hLeft@ and @hRight@ for bars on the left and right screens,
+-- respectively, and @pp@ is a pretty-printer function that takes a handle, you
+-- could write
+--
+-- > logHook = let log screen handle = dynamicLogWithPP . filterOutWsPP [scratchpadWorkspaceTag] . marshallPP screen . pp $ handle
+-- >           in log 0 hLeft >> log 1 hRight
+filterOutWsPP :: [WorkspaceId] -> PP -> PP
+filterOutWsPP ws pp = pp { ppSort = (. filterOutWs ws) <$> ppSort pp }
 
 -- | The 'PP' type allows the user to customize the formatting of
 --   status information.

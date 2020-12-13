@@ -176,17 +176,28 @@
     - Added `shortenLeft` function, like existing `shorten` but shortens by
       truncating from left instead of right. Useful for showing directories.
 
+    - Added `shorten'` and `shortenLeft'` functions with customizable overflow
+      markers.
+
+    - Added `filterOutWsPP` for filtering out certain workspaces from being
+      displayed.
+
   * `XMonad.Layout.BoringWindows`
 
      Added boring-aware `swapUp`, `swapDown`, `siftUp`, and `siftDown` functions.
 
   * `XMonad.Util.NamedScratchpad`
 
-     Added two new exported functions to the module:
-     - `customRunNamedScratchpadAction`
-         (provides the option to customize the `X ()` action the scratchpad is launched by)
-     - `spawnHereNamedScratchpadAction`
-         (uses `XMonad.Actions.SpawnOn.spawnHere` to initially start the scratchpad on the workspace it was launched on)
+     - Added two new exported functions to the module:
+         - `customRunNamedScratchpadAction`
+             (provides the option to customize the `X ()` action the scratchpad is launched by)
+         - `spawnHereNamedScratchpadAction`
+             (uses `XMonad.Actions.SpawnOn.spawnHere` to initially start the scratchpad on the workspace it was launched on)
+     - Deprecated `namedScratchpadFilterOutWorkspace` and
+       `namedScratchpadFilterOutWorkspacePP`.  Use
+       `XMonad.Util.WorkspaceCompare.filterOutWs` respectively
+       `XMonad.Hooks.DynamicLog.filterOutWsPP` instead.
+     - Exported the `scratchpadWorkspaceTag`.
 
   * `XMonad.Util.Run`
 
@@ -258,7 +269,7 @@
 
   * `XMonad.Util.EZConfig`
     - Added support for XF86Bluetooth.
-    
+
   * `XMonad.Util.Loggers`
     - Make `battery` and `loadAvg` distro-independent.
 
@@ -303,10 +314,20 @@
 
     - Added `workspaceHistoryModify` to modify the workspace history with a pure
       function.
-      
+
   * `XMonad.Hooks.DynamicLog`
 
-    - Add the -dock argument to the dzen spawn arguments      
+    - Add the -dock argument to the dzen spawn arguments
+
+  * `XMonad.Util.DebugWindow`
+    Fixed a bottom in `debugWindow` when used on windows with UTF8 encoded titles.
+
+  * `XMonad.Config.Xfce`
+    Set `terminal` to `xfce4-terminal`.
+
+  * `XMonad.Hooks.WorkspaceCompare`
+
+    - Added `filterOutWs` for workspace filtering.
 
 ## 0.16
 
