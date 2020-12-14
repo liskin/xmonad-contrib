@@ -453,14 +453,14 @@ toGroupStack gs st@(W.Stack f ls rs) =
   where
     wset = S.fromList (W.integrate st)
     dead = W.filter (`S.member` wset) -- drop dead windows or entire groups
-    refocus s = focusWindow' f s <|> pure s -- sync focus into groups
+    refocus s | f `elem` W.integrate s = W.filter (`elem` W.integrate s) st
+              | otherwise = pure s -- ^^ sync focus/order of current group
     gs' = mapGroups (refocus <=< dead) gs
     gset = S.fromList . concatMap W.integrate . M.elems $ gs'
     -- after refocus, f is either the focused window of some group, or not in
     -- gs' at all, so `lu f` is never Nothing
-    lu w = if w `S.member` gset
-        then w `M.lookup` gs'
-        else Just (W.Stack w [] [])
+    lu w | w `S.member` gset = w `M.lookup` gs'
+         | otherwise = Just (W.Stack w [] []) -- singleton groups for new wins
 
 mapGroups :: (Ord a) => (W.Stack a -> Maybe (W.Stack a)) -> Groups a -> Groups a
 mapGroups f = M.fromList . map (W.focus &&& id) . mapMaybe f . M.elems
