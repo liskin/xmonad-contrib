@@ -125,12 +125,19 @@
 
     Extends ManageHook EDSL to work on focused windows and current workspace.
 
+  * `XMonad.Config.LXQt`
+
+    This module provides a config suitable for use with the LXQt desktop
+    environment.
+
 ### Bug Fixes and Minor Changes
 
   * `XMonad.Actions.DynamicProjects`
 
-    The `changeProjectDirPrompt` function respects the `complCaseSensitivity` field
+    - The `changeProjectDirPrompt` function respects the `complCaseSensitivity` field
     of `XPConfig` when performing directory completion.
+
+    - `modifyProject` is now exported.
 
   * `XMonad.Layout.WorkspaceDir`
 
@@ -181,6 +188,16 @@
 
     - Added `filterOutWsPP` for filtering out certain workspaces from being
       displayed.
+
+    - Added `xmobarProp`, `statusBarProp`, and `statusBarPropTo` for
+      property-based alternatives to `xmobar` and `statusBar` respectively.
+
+    - Reworked the module documentation to suggest property-based logging
+      instead of pipe-based logging, due to the various issues associated with
+      the latter.
+
+    - Added `spawnStatusBarAndRemember` and `cleanupStatusBars` to provide 
+      a way to safely restart status bars without relying on pipes.
 
   * `XMonad.Layout.BoringWindows`
 
@@ -332,6 +349,11 @@
   * `XMonad.Layout.SubLayouts`
 
     - Floating windows are no longer moved to the end of the window stack.
+
+  * `XMonad.Layout.NoBorders`
+
+    - Fixed handling of floating window borders in multihead setups that was
+      broken since 0.14.
 
 ## 0.16
 

@@ -39,6 +39,7 @@ module XMonad.Actions.DynamicProjects
        , lookupProject
        , currentProject
        , activateProject
+       , modifyProject
        ) where
 
 --------------------------------------------------------------------------------
@@ -49,7 +50,6 @@ import Data.List (sort, union, stripPrefix)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Data.Maybe (fromMaybe, isNothing)
-import Data.Monoid ((<>))
 import System.Directory (setCurrentDirectory, getHomeDirectory, makeAbsolute)
 import XMonad
 import XMonad.Actions.DynamicWorkspaces
