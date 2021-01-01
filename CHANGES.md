@@ -368,6 +368,11 @@
     - Made the history respect words that were "completed" by `alwaysHighlight`
       upon confirmation of the selection by the user.
 
+  * `XMonad.Layout.NoBorders`
+
+    - Fixed handling of floating window borders in multihead setups that was
+      broken since 0.14.
+
 ## 0.16
 
 ### Breaking Changes
