@@ -377,6 +377,11 @@
 
     - Floating windows are no longer moved to the end of the window stack.
 
+  * `XMonad.Layout.NoBorders`
+
+    - Fixed handling of floating window borders in multihead setups that was
+      broken since 0.14.
+
 ## 0.16
 
 ### Breaking Changes
