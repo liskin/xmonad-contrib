@@ -441,12 +441,12 @@ updateWs = windowsMaybe . updateWs'
 
 updateWs' :: Groups Window -> WindowSet -> Maybe WindowSet
 updateWs' gs ws = do
-    f <- W.peek ws
-    let w = W.index ws
-        nes = concatMap W.integrate $ mapMaybe (flip M.lookup gs) w
-        ws' = W.focusWindow f $ foldr W.insertUp (foldr W.delete' ws nes) nes
-    guard $ W.index ws' /= W.index ws
-    return ws'
+    w <- W.stack . W.workspace . W.current $ ws
+    let gs' = updateGroup (Just w) gs
+        nes = concatMap W.integrate $ mapMaybe (flip M.lookup gs') $ W.integrate w
+    w' <- focusWindow' (W.focus w) =<< W.differentiate nes
+    guard $ w' /= w
+    return $ W.modify' (const w') ws
 
 -- | focusWindow'. focus an element of a stack, is Nothing if that element is
 -- absent. See also 'W.focusWindow'
