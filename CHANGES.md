@@ -373,6 +373,10 @@
     - Made the history respect words that were "completed" by `alwaysHighlight`
       upon confirmation of the selection by the user.
 
+  * `XMonad.Layout.SubLayouts`
+
+    - Floating windows are no longer moved to the end of the window stack.
+
 ## 0.16
 
 ### Breaking Changes
