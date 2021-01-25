@@ -399,6 +399,10 @@
     - Fixed handling of floating window borders in multihead setups that was
       broken since 0.14.
 
+  * `XMonad.Layout.SubLayouts`
+
+    - Floating windows are no longer moved to the end of the window stack.
+
 ## 0.16
 
 ### Breaking Changes
