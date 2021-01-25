@@ -501,6 +501,10 @@
 
     - Fixed a bug that prevented changing focus on inactive workspaces.
 
+  * `XMonad.Layout.SubLayouts`
+
+    - Floating windows are no longer moved to the end of the window stack.
+
 ## 0.16
 
 ### Breaking Changes
