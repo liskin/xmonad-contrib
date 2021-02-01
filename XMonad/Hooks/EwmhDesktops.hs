@@ -62,11 +62,11 @@ import XMonad.Util.WindowProperties (getProp32)
 -- > import XMonad
 -- > import XMonad.Hooks.EwmhDesktops
 -- >
--- > main = xmonad $ ewmh' def{fullscreen = True} def
+-- > main = xmonad $ … . ewmh' def{fullscreen = True} . … $ def{…}
 --
 -- or, if fullscreen handling is not desired, just
 --
--- > main = xmonad $ ewmh def
+-- > main = xmonad $ … . ewmh . … $ def{…}
 --
 -- You may also be interested in 'docks' from "XMonad.Hooks.ManageDocks".
 --
