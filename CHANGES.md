@@ -146,6 +146,13 @@
     This module provides a config suitable for use with the LXQt desktop
     environment.
 
+  * `XMonad.Hooks.Rescreen`
+
+    Custom hooks for screen (xrandr) configuration changes. These can be used
+    to restart/reposition status bars or systrays automatically after xrandr,
+    as well as to actually invoke xrandr or autorandr when an output is
+    (dis)connected.
+
 ### Bug Fixes and Minor Changes
 
   * `XMonad.Actions.DynamicProjects`
