@@ -40,7 +40,7 @@ module XMonad.Actions.WorkspaceNames (
     workspaceNamePrompt,
 
     -- * EwmhDesktops integration
-    workspaceNamesListTransform
+    workspaceNamesRenameWS,
     ) where
 
 import XMonad
@@ -190,12 +190,12 @@ workspaceNamePrompt conf job = do
         contains completions input =
           return $ filter (Data.List.isInfixOf input) completions
 
--- | 'XMonad.Hooks.EwmhDesktops.workspaceListTransform' that exposes workspace
+-- | 'XMonad.Hooks.EwmhDesktops.workspaceRename' that exposes workspace
 -- names to pagers and other EWMH-aware clients.
 --
 -- Usage:
--- > ewmh' def{ workspaceListTransform = workspaceNamesListTransform }
-workspaceNamesListTransform :: X ([WindowSpace] -> [WindowSpace])
-workspaceNamesListTransform = do
+-- > ewmh' def{ workspaceRename = workspaceNamesRenameWS }
+workspaceNamesRenameWS :: X (WindowSpace -> WindowSpace)
+workspaceNamesRenameWS = do
     names <- getWorkspaceNames
-    return $ map $ \ws -> ws{ W.tag = names $ W.tag ws }
+    return $ \ws -> ws{ W.tag = names $ W.tag ws }
