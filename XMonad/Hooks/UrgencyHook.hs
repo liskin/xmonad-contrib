@@ -86,7 +86,9 @@ import qualified XMonad.Util.ExtensibleState as XS
 import XMonad.Util.NamedWindows (getName)
 import XMonad.Util.Timer (TimerId, startTimer, handleTimer)
 import XMonad.Util.WindowProperties (getProp32)
+#if X11_has_setClientMessageEvent
 import XMonad.Util.XUtils (fi)
+#endif
 
 import Control.Monad (when)
 import Data.Bits (testBit)
