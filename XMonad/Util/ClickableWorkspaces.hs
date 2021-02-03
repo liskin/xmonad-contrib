@@ -32,13 +32,13 @@ import XMonad.Hooks.DynamicLog (xmobarAction, xmobarRaw, PP(..))
 -- > logHook = clickablePP xmobarPP { ... } >>= dynamicLogWithPP
 --
 -- * Requirements:
---   * wmctrl on system (in path)
+--   * @xdotool@ on system (in path)
 --   * "XMonad.Hooks.EwmhDesktops" for wmctrl support (see Hackage docs for setup)
 --   * use of UnsafeStdinReader in xmobarrc (rather than StdinReader)
 
 
 clickableWrap :: Int -> String -> String
-clickableWrap i ws = xmobarAction ("wmctrl -s " ++ show i) "1" $ xmobarRaw ws
+clickableWrap i ws = xmobarAction ("xdotool set_desktop " ++ show i) "1" $ xmobarRaw ws
 
 -- Use index of workspace in users config to target workspace with wmctrl switch.
 getClickable :: X (WorkspaceId -> String)
