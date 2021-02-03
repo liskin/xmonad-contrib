@@ -318,6 +318,7 @@ library
                         XMonad.Prompt.Zsh
                         XMonad.Util.ActionCycle
                         XMonad.Util.ClickableWorkspaces
+                        XMonad.Util.ClickableWorkspaces.Integrations
                         XMonad.Util.Cursor
                         XMonad.Util.CustomKeys
                         XMonad.Util.DebugWindow

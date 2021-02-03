@@ -18,6 +18,7 @@ module XMonad.Util.ClickableWorkspaces (
   -- * Usage
   -- $usage
   clickablePP,
+  clickableRenamedPP,
   clickableWrap
   ) where
 
@@ -41,17 +42,24 @@ clickableWrap :: Int -> String -> String
 clickableWrap i ws = xmobarAction ("xdotool set_desktop " ++ show i) "1" $ xmobarRaw ws
 
 -- Use index of workspace in users config to target workspace with wmctrl switch.
-getClickable :: X (WorkspaceId -> String)
-getClickable = do
+getClickable :: (WorkspaceId -> String) -> X (WorkspaceId -> String)
+getClickable ren = do
   wsIndex <- getWsIndex
   return $ \ws -> case wsIndex ws of
-                    Just idx -> clickableWrap idx ws
+                    Just idx -> clickableWrap idx (ren ws)
                     Nothing -> ws
 
 -- | Apply clickable wrapping to all workspace fields in given PP.
 clickablePP :: PP -> X PP
-clickablePP pp = do
-  clickable <- getClickable
+clickablePP = clickableRenamedPP id
+
+-- | Alternative to 'clickablePP' that allows changing the visible workspace
+-- name. Useful for integration with modules that change workspace names, such
+-- as "XMonad.Layout.IndependentScreens" and "XMonad.Actions.WorkspaceNames".
+-- See "XMonad.Util.ClickableWorkspaces.Integrations".
+clickableRenamedPP :: (WorkspaceId -> String) -> PP -> X PP
+clickableRenamedPP ren pp = do
+  clickable <- getClickable ren
   return $
     pp { ppCurrent         = ppCurrent pp . clickable
        , ppVisible         = ppVisible pp . clickable
