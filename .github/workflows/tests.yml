@@ -19,7 +19,7 @@ jobs:
           - lts-15
           - lts-14
           - lts-12
-        yaml: ['stack.yaml', 'stack-master.yaml']
+        yaml: ['stack-master.yaml']
 
     steps:
       - name: Clone project
