@@ -33,6 +33,7 @@ module XMonad.Layout.SubLayouts (
     Sublayout,
 
     getGroupStack,
+    GetGroupStack,
     GroupStack,
 
     -- * Screenshots
