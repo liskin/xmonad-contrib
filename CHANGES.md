@@ -55,6 +55,8 @@
     Serves as a collection of hacks and fixes that should be easily acessible to users.
     The first element of this module is windowedFullscreenFix, which fixes fullscreen behaviour
     of chromium based applications when using windowed fullscreen.
+    A second entry is `javaHack`, which helps when dealing with Java applications that might
+    not work well with xmonad.
 
   * `XMonad.Util.ActionCycle`
 
@@ -224,6 +226,12 @@
     - Added `xmobarBorder` function to create borders around strings.
 
     - Add the -dock argument to the dzen spawn arguments
+
+    - Added `StatusBarConfig` and `makeStatusBar` and `makeStatusBar'` as
+      an abstraction for status bars; together with `statusBarPropConfig`,
+      `statusBarPropToConfig`, `statusBarHandleConfig` and `statusBarHandleConfig'`
+      to provide the configs for the already existing functionality. This provides
+      multiple status bars support.
 
   * `XMonad.Layout.BoringWindows`
 
@@ -412,6 +420,11 @@
   * `XMonad.Layout.SubLayouts`
 
     - Floating windows are no longer moved to the end of the window stack.
+
+  * `XMonad.Hooks.ServerMode`
+
+    - To make it easier to use, the `xmonadctl` client is now included in
+      `scripts/`.
 
 ## 0.16
 
