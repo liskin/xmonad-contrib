@@ -321,6 +321,8 @@
 
     - Added `doLower` and `doRaise`
 
+    - Added `windowTag`
+
   * `XMonad.Util.EZConfig`
 
     - Added support for XF86Bluetooth.
@@ -425,6 +427,15 @@
 
     - To make it easier to use, the `xmonadctl` client is now included in
       `scripts/`.
+
+  * `XMonad.Hooks.UrgencyHook`
+
+    - It's now possible to clear urgency of selected windows only using the
+      newly exported `clearUrgents'` function. Also, this and `clearUrgents`
+      now clear the `_NET_WM_STATE_DEMANDS_ATTENTION` bit as well.
+
+    - Added a variant of `filterUrgencyHook` that takes a generic `Query Bool`
+      to select which windows should never be marked urgent.
 
 ## 0.16
 
