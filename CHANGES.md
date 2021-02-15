@@ -437,6 +437,10 @@
     - Added a variant of `filterUrgencyHook` that takes a generic `Query Bool`
       to select which windows should never be marked urgent.
 
+  * `XMonad.Layout.TrackFloating`
+
+    - Fixed a bug that prevented changing focus on inactive workspaces.
+
 ## 0.16
 
 ### Breaking Changes
