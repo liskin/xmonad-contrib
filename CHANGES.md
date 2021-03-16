@@ -68,6 +68,11 @@
       Again, no change when used together with `dynamicLogString`, but other
       uses of these in user configs might need to be adapted.
 
+  * `XMonad.Actions.WorkspaceNames`
+
+    - The type of `getWorkspaceNames` was changed to fit into the new `ppRename`
+      field of `PP`.
+
 ### New Modules
 
   * `XMonad.Util.Hacks`
@@ -170,6 +175,12 @@
 
 ### Bug Fixes and Minor Changes
 
+  * `XMonad.Config.Mate`
+
+    - Split out the logout dialog and add a shutdown dialog. The default behavior
+      remains the same but there are now `mateLogout` and `mateShutdown` actions
+      available.
+
   * `XMonad.Actions.DynamicProjects`
 
     - The `changeProjectDirPrompt` function respects the `complCaseSensitivity` field
@@ -253,6 +264,10 @@
       to provide the configs for the already existing functionality. This provides
       multiple status bars support.
 
+    - Added `ppRename` to `PP`, which makes it possible for extensions like
+      `workspaceNamesPP`, `marshallPP` and/or `clickablePP` to compose
+      intuitively.
+
   * `XMonad.Layout.BoringWindows`
 
     - Added boring-aware `swapUp`, `swapDown`, `siftUp`, and `siftDown` functions.
@@ -330,6 +345,10 @@
     - Export `doSink`
 
     - Added `doLower` and `doRaise`
+
+    - Added `shiftToSame` and `clientLeader` which allow a hook to be created
+      that shifts a window to the workspace of other windows of the application
+      (using either the `WM_CLIENT_LEADER` or `_NET_WM_PID` property).
 
     - Added `windowTag`
 
@@ -418,6 +437,9 @@
       by allowing pointer events to pass through the custom prompt event
       loop.
 
+    - The prompt now cycles through its suggestions if one hits the ends
+      of the suggestion list and presses `TAB` again.
+
   * `XMonad.Actions.TreeSelect`
 
     - Fixed a crash when focusing a new window while the tree select
@@ -446,6 +468,11 @@
 
     - Added a variant of `filterUrgencyHook` that takes a generic `Query Bool`
       to select which windows should never be marked urgent.
+
+  * `XMonad.Hooks.ServerMode`
+
+    - To make it easier to use, the `xmonadctl` client is now included in
+      `scripts/`.
 
   * `XMonad.Layout.TrackFloating`
 
