@@ -378,6 +378,8 @@
     - Added `workspaceNamesRenameWS` which makes workspace names visible
       to external pagers and tools like `wmctrl` or `arbtt`.
 
+      TODO: drop this
+
   * `XMonad.Util.PureX`
 
     - Added `focusWindow` and `focusNth` which don't refresh (and thus
