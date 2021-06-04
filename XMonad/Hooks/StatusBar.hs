@@ -58,12 +58,15 @@ module XMonad.Hooks.StatusBar (
   killAllStatusBars,
   ) where
 
+import Control.Concurrent (threadDelay, rtsSupportsBoundThreads)
+import Control.Concurrent.Async (race_, mapConcurrently_)
 import Control.Exception (SomeException, try)
 import Data.IORef (newIORef, readIORef, writeIORef)
 import qualified Codec.Binary.UTF8.String as UTF8 (encode)
 import qualified Data.Map as M
 import System.IO (hClose)
-import System.Posix.Signals (sigTERM, signalProcessGroup)
+import System.Posix.Process (getGroupProcessStatus)
+import System.Posix.Signals (sigTERM, sigKILL, signalProcessGroup)
 import System.Posix.Types (ProcessID)
 
 import Foreign.C (CChar)
@@ -545,7 +548,15 @@ killStatusBar cmd = do
     XS.modify (StatusBarPIDs . M.delete cmd . getPIDs)
 
 killPid :: ProcessID -> IO ()
-killPid pidToKill = void $ try @SomeException (signalProcessGroup sigTERM pidToKill)
+killPid pidToKill | rtsSupportsBoundThreads = try_ $ race_ (killer 50000) waiter
+                  | otherwise = try_ $ signalProcessGroup sigTERM pidToKill
+  where
+    try_ = void . try @SomeException
+    waiter = getGroupProcessStatus True False pidToKill >> waiter
+    killer delay = do
+        signalProcessGroup (if delay < 1000000 then sigTERM else sigKILL) pidToKill
+        threadDelay delay
+        killer (delay * 2)
 
 -- | Spawns a status bar and saves its PID together with the commands that was
 -- used to start it. This is useful when the status bars should be restarted
@@ -563,4 +574,7 @@ spawnStatusBar cmd = do
 -- caveats in 'cleanupStatusBar'
 killAllStatusBars :: X ()
 killAllStatusBars =
-  XS.gets (M.elems . getPIDs) >>= io . traverse_ killPid >> XS.put (StatusBarPIDs mempty)
+    XS.gets (M.elems . getPIDs) >>= io . mapC_ killPid >> XS.put (StatusBarPIDs mempty)
+  where
+    mapC_ | rtsSupportsBoundThreads = mapConcurrently_
+          | otherwise = traverse_
