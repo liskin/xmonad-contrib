@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TupleSections #-}
@@ -23,7 +24,8 @@
 
 module XMonad.Layout.ConditionalLayout where
 
-import XMonad
+import XMonad hiding (hide)
+import XMonad.Prelude
 import XMonad.Layout.LayoutModifier
 import qualified XMonad.StackSet as W
 
@@ -36,6 +38,7 @@ import qualified XMonad.StackSet as W
 -- typeclasses.
 class (Read c, Show c) => ModifierCondition c where
   shouldApply :: c -> WorkspaceId -> X Bool
+-- TODO: WindowSpace instead?
 
 -- | 'ConditionalLayoutModifier' takes a condition implemented as a
 -- 'ModifierCondition' together with a 'LayoutModifier' and builds a new
@@ -100,4 +103,32 @@ instance (ModifierCondition c, LayoutModifier m Window) =>
   modifyDescription (ConditionalLayoutModifier _ originalModifier) l =
     modifyDescription originalModifier l
 
+-- | 'ModifiedLayout' extended with a condition and its last evaluation result
+-- (for methods that can't evaluate it).
+data CondModifiedLayout c m l a = CondModifiedLayout Bool c (ModifiedLayout m l a) deriving (Read, Show)
 
+instance (ModifierCondition c, LayoutModifier m a, LayoutClass l a, Typeable c, Typeable m)
+    => LayoutClass (CondModifiedLayout c m l) a
+  where
+    runLayout (W.Workspace i cml@(CondModifiedLayout a c _) ms) r = do
+        a' <- shouldApply c i
+        cml' <- if a == a' then pure Nothing else Just . switch <$> hide cml
+        fmap (<|> cml') <$> run (fromMaybe cml cml')
+      where
+        hide x = fmap (fromMaybe x) $ handleMessage x (SomeMessage Hide)
+        switch (CondModifiedLayout a' c' ml') = CondModifiedLayout (not a') c' ml'
+
+        run (CondModifiedLayout True c' ml) =
+            fmap (fmap (CondModifiedLayout True c')) <$> runLayout (W.Workspace i ml ms) r
+        run (CondModifiedLayout False c' (ModifiedLayout m l)) =
+            fmap (fmap (CondModifiedLayout False c' . ModifiedLayout m)) <$> runLayout (W.Workspace i l ms) r
+
+    handleMessage (CondModifiedLayout a c ml@(ModifiedLayout lm l)) m
+        | Just ReleaseResources <- fromMessage m = fmap (CondModifiedLayout a c) <$> handleMessage ml m
+        | a                                      = fmap (CondModifiedLayout a c) <$> handleMessage ml m
+        | otherwise          = fmap (CondModifiedLayout a c . ModifiedLayout lm) <$> handleMessage l m
+
+    description (CondModifiedLayout a _ ml@(ModifiedLayout _ l)) = if a then description ml else description l
+
+conditional :: (ModifierCondition c) => c -> (l a -> ModifiedLayout m l a) -> (l a -> CondModifiedLayout c m l a)
+conditional c ml = CondModifiedLayout True c . ml
