@@ -37,6 +37,7 @@ import XMonad
 import XMonad.Prelude hiding (find)
 
 import XMonad.StackSet (Workspace(..))
+import XMonad.Layout.Inspect
 
 import Control.Arrow
 import Data.IORef
@@ -232,3 +233,7 @@ isToggleActive t w = do
     ref <- io $ newIORef Nothing
     sendMessageWithNoRefresh (MultiToggleActiveQueryMessage t ref) w
     io $ readIORef ref
+
+instance (InspectLayout i l a, LayoutClass l a) => InspectLayout i (MultiToggle ts l) a where
+    inspectLayout i mt = inspectLayout i $ deEL $ currLayout mt
+    -- inspect current transformer?
