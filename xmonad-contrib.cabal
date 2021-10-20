@@ -263,6 +263,7 @@ library
                         XMonad.Layout.IfMax
                         XMonad.Layout.ImageButtonDecoration
                         XMonad.Layout.IndependentScreens
+                        XMonad.Layout.Inspect
                         XMonad.Layout.LayoutBuilder
                         XMonad.Layout.LayoutCombinators
                         XMonad.Layout.LayoutHints
@@ -432,6 +433,7 @@ test-suite tests
                   XMonad.Hooks.UrgencyHook
                   XMonad.Hooks.WorkspaceHistory
                   XMonad.Layout.Decoration
+                  XMonad.Layout.Inspect
                   XMonad.Layout.LayoutModifier
                   XMonad.Layout.LimitWindows
                   XMonad.Layout.NoBorders
