@@ -1,11 +1,12 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ParallelListComp #-}
 {-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
-
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  XMonad.Layout.SubLayouts
@@ -38,6 +39,10 @@ module XMonad.Layout.SubLayouts (
 
     Sublayout,
 
+    getGroupStack,
+    GetGroupStack,
+    GroupStack,
+
     -- * Screenshots
     -- $screenshots
 
@@ -49,6 +54,7 @@ module XMonad.Layout.SubLayouts (
 import XMonad.Layout.Circle () -- so haddock can find the link
 
 import XMonad.Layout.Decoration(Decoration, DefaultShrinker)
+import XMonad.Layout.Inspect(InspectResult, InspectLayout(..), inspectWorkspace)
 import XMonad.Layout.LayoutModifier(LayoutModifier(handleMess, modifyLayout,
                                     redoLayout),
                                     ModifiedLayout(..))
@@ -524,3 +530,20 @@ setStack :: Maybe (W.Stack Window) -> X ()
 setStack x = modify (\s -> s { windowset = (windowset s)
                 { W.current = (W.current $ windowset s)
                 { W.workspace = (W.workspace $ W.current $ windowset s) { W.stack = x }}}})
+
+-- | Get group stack for a given stack.
+newtype GetGroupStack = GetGroupStack (W.Stack Window)
+type instance InspectResult GetGroupStack = Alt Maybe (GroupStack Window)
+instance InspectLayout GetGroupStack (Sublayout l) Window where
+    inspectLayout (GetGroupStack ws) Sublayout{subls} =
+        pure $ toGroupStack (toGroups subls) ws
+
+getGroupStack :: (LayoutClass l Window, InspectLayout GetGroupStack l Window)
+              => l Window -> WindowSpace -> Maybe (W.Stack (W.Stack Window))
+getGroupStack lay ws = gs
+  where
+    gs' = inspectWorkspace lay <$> (GetGroupStack <$> W.stack ws) <*> Just ws
+    gs = (getAlt =<< gs') <|> (singletons <$> W.stack ws)
+
+    singletons (W.Stack f l r) = W.Stack (s f) (map s l) (map s r)
+    s x = W.Stack x [] []
