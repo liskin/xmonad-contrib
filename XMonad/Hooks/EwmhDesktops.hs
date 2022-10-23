@@ -40,6 +40,10 @@ module XMonad.Hooks.EwmhDesktops (
     -- $customActivate
     setEwmhActivateHook,
 
+    -- ** Fullscreen
+    -- $customFullscreen
+    setEwmhFullscreenHooks,
+
     -- * Standalone hooks (deprecated)
     ewmhDesktopsStartup,
     ewmhDesktopsLogHook,
@@ -102,6 +106,8 @@ data EwmhDesktopsConfig =
             -- ^ configurable workspace rename (see 'XMonad.Hooks.StatusBar.PP.ppRename')
         , activateHook :: ManageHook
             -- ^ configurable handling of window activation requests
+        , fullscreenHooks :: (ManageHook, ManageHook)
+            -- ^ configurable handling of fullscreen state requests
         }
 
 instance Default EwmhDesktopsConfig where
@@ -109,6 +115,7 @@ instance Default EwmhDesktopsConfig where
         { workspaceSort = getSortByIndex
         , workspaceRename = pure pure
         , activateHook = doFocus
+        , fullscreenHooks = (doFullFloat, doSink)
         }
 
 
@@ -227,6 +234,21 @@ setEwmhWorkspaceRename f = XC.modifyDef $ \c -> c{ workspaceRename = f }
 -- "XMonad.ManageHook", "XMonad.Hooks.ManageHelpers" and "XMonad.Hooks.Focus".
 setEwmhActivateHook :: ManageHook -> XConfig l -> XConfig l
 setEwmhActivateHook h = XC.modifyDef $ \c -> c{ activateHook = h }
+
+
+-- $customFullscreen
+-- When a client sends a @_NET_WM_STATE@ request to add/remove/toggle the
+-- @_NET_WM_STATE_FULLSCREEN@ state, 'ewmhFullscreen' uses a pair of hooks to
+-- make the window fullscreen and revert its state. The default hooks are
+-- stateless: windows are fullscreened by turning them into fullscreen floats,
+-- and reverted by sinking them into the tiling layer. This behaviour can be
+-- configured by supplying a pair of 'ManageHook's to 'setEwmhFullscreenHooks'.
+
+-- | Set (replace) the hooks invoked when clients ask to add/remove the
+-- $_NET_WM_STATE_FULLSCREEN@ state. The defaults are 'doFullFloat' and
+-- 'doSink'.
+setEwmhFullscreenHooks :: ManageHook -> ManageHook -> XConfig l -> XConfig l
+setEwmhFullscreenHooks f uf = XC.modifyDef $ \c -> c{ fullscreenHooks = (f, uf) }
 
 
 -- | Initializes EwmhDesktops and advertises EWMH support to the X server.
@@ -421,7 +443,12 @@ fullscreenStartup = setFullscreenSupported
 -- Note this is not included in 'ewmh'.
 {-# DEPRECATED fullscreenEventHook "Use ewmhFullscreen instead." #-}
 fullscreenEventHook :: Event -> X All
-fullscreenEventHook (ClientMessageEvent _ _ _ dpy win typ (action:dats)) = do
+fullscreenEventHook = XC.withDef . fullscreenEventHook'
+
+fullscreenEventHook' :: Event -> EwmhDesktopsConfig -> X All
+fullscreenEventHook'
+    ClientMessageEvent{ev_event_display = dpy, ev_window = win, ev_message_type = typ, ev_data = action:dats}
+    EwmhDesktopsConfig{fullscreenHooks = (fullscreenHook, unFullscreenHook)} = do
   managed <- isClient win
   wmstate <- getAtom "_NET_WM_STATE"
   fullsc <- getAtom "_NET_WM_STATE_FULLSCREEN"
@@ -438,14 +465,14 @@ fullscreenEventHook (ClientMessageEvent _ _ _ dpy win typ (action:dats)) = do
   when (managed && typ == wmstate && fi fullsc `elem` dats) $ do
     when (action == add || (action == toggle && not isFull)) $ do
       chWstate (fi fullsc:)
-      windows $ W.float win $ W.RationalRect 0 0 1 1
+      windows . appEndo =<< runQuery fullscreenHook win
     when (action == remove || (action == toggle && isFull)) $ do
       chWstate $ delete (fi fullsc)
-      windows $ W.sink win
+      windows . appEndo =<< runQuery unFullscreenHook win
 
   return $ All True
 
-fullscreenEventHook _ = return $ All True
+fullscreenEventHook' _ _ = return $ All True
 
 setNumberOfDesktops :: (Integral a) => a -> X ()
 setNumberOfDesktops n = withDisplay $ \dpy -> do
