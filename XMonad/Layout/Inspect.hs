@@ -8,6 +8,7 @@
 
 -- |
 -- Module      :  XMonad.Layout.Inspect
+-- Description :  Inspect layout data.
 -- Copyright   :  (c) 2020 Tomáš Janoušek <tomi@nomi.cz>
 -- License     :  BSD3
 --
@@ -15,8 +16,9 @@
 -- Stability   :  experimental
 -- Portability :  unknown
 --
--- TODO
---
+-- Inspect a workspace's layout data. Useful for accessing data contained in
+-- layout modifiers.
+
 module XMonad.Layout.Inspect (
     -- * Usage
     -- $usage
@@ -36,23 +38,58 @@ import XMonad
 import qualified XMonad.StackSet as W
 
 -- $usage
+-- This module provides a way for layout authors to make workspace layout data
+-- accessible to end-users.
 --
--- TODO: help for users
+-- Best explained by example, suppose you've written a layout modifier:
+--
+-- > newtype Foo a = Foo String deriving (Read, Show)
+-- > instance LayoutModifier Foo a
+-- > foo :: LayoutClass l a => String -> l a -> ModifiedLayout Foo l a
+-- > foo = ModifiedLayout . Foo
+--
+-- To allow users to inspect the string contained in a given workspace's layout,
+-- first import this module:
+--
+-- > import XMonad.Layout.Inspect
+--
+-- Then define instances for 'InspectResult' and 'InspectLayout', and implement
+-- getFoo in terms of 'inspectWorkspace':
+--
+-- > data GetFoo = GetFoo
+-- > type instance InspectResult GetFoo = Alt Maybe String
+-- >
+-- > instance InspectLayout GetFoo Foo a where
+-- >   inspectLayout GetFoo (Foo s) = pure s
+-- >
+-- > getFoo :: (LayoutClass l Window, InspectLayout GetFoo l Window)
+-- >        => l Window -> WindowSpace -> Maybe String
+-- > getFoo l = getAlt . inspectWorkspace l GetFoo
+--
+-- An end-user can then call getFoo by passing it the appropriate layout and a
+-- given workspace:
+--
+-- > xFoo :: WindowSpace -> X ()
+-- > xFoo wsp = do
+-- >   l <- asks (layoutHook . config)
+-- >   case getFoo l wsp of
+-- >     Nothing -> pure ()
+-- >     Just s -> xmessage s
 
--- | TODO
+-- | Inspect the layout of the currently focused workspace.
 inspectCurrent :: (LayoutClass l Window, InspectLayout i l Window)
                => l Window -> i -> X (InspectResult i)
 inspectCurrent l i = gets (inspectWorkspace l i . w)
     where w = W.workspace . W.current . windowset
 
--- | TODO
+-- | Inspect the layout of the workspace with a specified tag.
 inspectTag :: (LayoutClass l Window, InspectLayout i l Window)
            => l Window -> i -> WorkspaceId
            -> X (Maybe (InspectResult i))
 inspectTag l i t = gets (fmap (inspectWorkspace l i) . mw)
     where mw = find ((t==) . W.tag) . W.workspaces . windowset
 
--- | TODO
+-- | Inspect the layout of a specified workspace.
 inspectWorkspace :: (LayoutClass l Window, InspectLayout i l Window)
                  => l Window -> i -> WindowSpace -> InspectResult i
 inspectWorkspace l i = inspectLayout i . asLayout l . W.layout
@@ -69,7 +106,12 @@ cast' x | Just HRefl <- ta `eqTypeRep` tb = x
 
 type family InspectResult i
 
--- | TODO: for layout/modifier authors
+-- | A typeclass defining 'inspectLayout' over monoidal @InspectResult@ types.
+-- An overlappable instance provides sensible default behavior, returning
+-- 'mempty'. (Specific @InspectResult@ instances may override this by defining
+-- their own instance of 'InspectLayout'.) Additionally, an instance is provided
+-- for layouts using 'Choose', provided that all the layouts in the 'Choose' are
+-- capable of being inspected.
 class Monoid (InspectResult i) => InspectLayout i l a where
     inspectLayout :: i -> l a -> InspectResult i
 
