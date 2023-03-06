@@ -110,14 +110,12 @@ cast' x | Just HRefl <- ta `eqTypeRep` tb = x
 type family InspectResult i
 
 -- | A typeclass defining 'inspectLayout' over monoidal @InspectResult@ types.
--- An overlappable instance provides sensible default behavior, returning
--- 'mempty'. (Specific @InspectResult@ instances may override this by defining
--- their own instance of 'InspectLayout'.) Additionally, an instance is provided
--- for layouts using 'Choose', provided that all the layouts in the 'Choose' are
--- capable of being inspected.
 class Monoid (InspectResult i) => InspectLayout i l a where
     inspectLayout :: i -> l a -> InspectResult i
 
+-- | An overlappable instance provides sensible default behavior, returning
+-- 'mempty'. Specific @InspectResult@ instances may override this by defining
+-- their own instance of 'InspectLayout'.
 instance {-# OVERLAPPABLE #-} Monoid (InspectResult i) => InspectLayout i l a where
     inspectLayout _ _ = mempty
 
