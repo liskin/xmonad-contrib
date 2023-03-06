@@ -8,7 +8,7 @@
 
 -- |
 -- Module      :  XMonad.Layout.Inspect
--- Description :  Inspect layout data.
+-- Description :  Inspect layout state.
 -- Copyright   :  (c) 2020 Tomáš Janoušek <tomi@nomi.cz>
 -- License     :  BSD3
 --
@@ -16,7 +16,7 @@
 -- Stability   :  experimental
 -- Portability :  unknown
 --
--- Inspect a workspace's layout data. Useful for accessing data contained in
+-- Inspect a workspace's layout state. Useful for accessing state contained in
 -- layout modifiers.
 
 module XMonad.Layout.Inspect (
@@ -38,7 +38,7 @@ import XMonad
 import qualified XMonad.StackSet as W
 
 -- $usage
--- This module provides a way for layout authors to make workspace layout data
+-- This module provides a way for layout authors to make workspace layout state
 -- accessible to end-users.
 --
 -- Best explained by example, suppose you've written a layout modifier:
