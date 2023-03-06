@@ -69,10 +69,13 @@ import qualified XMonad.StackSet as W
 -- An end-user can then call getFoo by passing it the appropriate layout and a
 -- given workspace:
 --
+-- > myLayoutHook = ...
+-- >
+-- > main = xmonad $ def { layoutHook = myLayoutHook, ...
+-- >
 -- > xFoo :: WindowSpace -> X ()
 -- > xFoo wsp = do
--- >   l <- asks (layoutHook . config)
--- >   case getFoo l wsp of
+-- >   case getFoo myLayoutHook wsp of
 -- >     Nothing -> pure ()
 -- >     Just s -> xmessage s
 
