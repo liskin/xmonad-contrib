@@ -57,6 +57,7 @@ module XMonad.Hooks.StatusBar (
   killStatusBar,
   killAllStatusBars,
   startAllStatusBars,
+  signalStatusBars,
   ) where
 
 import Control.Concurrent (threadDelay, rtsSupportsBoundThreads)
@@ -67,7 +68,7 @@ import qualified Codec.Binary.UTF8.String as UTF8 (encode)
 import qualified Data.Map as M
 import System.IO (hClose)
 import System.Posix.Process (getGroupProcessStatus)
-import System.Posix.Signals (sigTERM, sigKILL, signalProcessGroup)
+import System.Posix.Signals (Signal, sigTERM, sigKILL, signalProcessGroup)
 import System.Posix.Types (ProcessID)
 
 import Foreign.C (CChar)
@@ -572,7 +573,7 @@ spawnStatusBar cmd = do
   XS.modify (StatusBarPIDs . M.insert cmd newPid . getPIDs)
 
 -- | Kill all status bars started with 'spawnStatusBar'. Note the
--- caveats in 'cleanupStatusBar'
+-- caveats in 'killStatusBar'.
 killAllStatusBars :: X ()
 killAllStatusBars =
     XS.gets (M.elems . getPIDs) >>= io . mapC_ killPid >> XS.put (StatusBarPIDs mempty)
@@ -585,3 +586,12 @@ killAllStatusBars =
 -- `killAllStatusBars`.
 startAllStatusBars :: X ()
 startAllStatusBars = XS.get >>= traverse_ (sbStartupHook . snd) . getASBs
+
+-- | Send a signal to all status bars started with 'spawnStatusBar'. Note the
+-- caveats in 'killStatusBar'.
+signalStatusBars :: Signal -> (String -> Bool) -> X ()
+signalStatusBars sig p =
+    XS.gets (M.elems . M.filterWithKey (const . p) . getPIDs) >>= io . traverse_ (signalPid sig)
+
+signalPid :: Signal -> ProcessID -> IO ()
+signalPid sig pid = void $ try @SomeException (signalProcessGroup sig pid)
